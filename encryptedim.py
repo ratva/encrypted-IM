@@ -17,13 +17,16 @@ from Crypto.Random import get_random_bytes as randb
 
 # Should use CBC mode https://pycryptodome.readthedocs.io/en/latest/src/cipher/classic.html#cbc-mode
 
+# HOST = 127.0.0.1
+PORT = 9999
+
 def start_server():
     # Create a socket using IPv4 (AF_INET) and TCP (SOCK_STREAM) for the server
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Set the socket address to be reusable
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     # Bind the socket to a tuple of hostname and port - localhost (127.0.0.1), port 9999
-    server_socket.bind(('localhost', 9999))
+    server_socket.bind(('localhost', PORT))
     # Set socket to start listening, allowing at most 1 queued connection
     server_socket.listen(1)
     # Comment out print statements for gradescope
@@ -42,26 +45,15 @@ def start_client(hostname):
     client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     # Connect socket to an existing hostname on port 9999, else fail and stop program.
     try:
-        client_socket.connect((hostname, 9999))
+        client_socket.connect((hostname, PORT))
         # Comment out print statements for gradescope
         # print(f'Connected to server: {hostname}')
-    except socket.error as err:
+    except ValueError:
         # Comment out print statements for gradescope
         # print(f"Failed to connect: {err}")
         client_socket.close()
         sys.exit(0)
     return client_socket
-
-    # Encryption example
-    # data = b"secret"
-    # key = get_random_bytes(16)
-    # cipher = AES.new(key, AES.MODE_CBC)
-    # ct_bytes = cipher.encrypt(pad(data, AES.block_size))
-    # iv = b64encode(cipher.iv).decode('utf-8')
-    # ct = b64encode(ct_bytes).decode('utf-8')
-    # result = json.dumps({'iv':iv, 'ciphertext':ct})
-    # print(result)
-    # '{"iv": "bWRHdzkzVDFJbWNBY0EwSmQ1UXFuQT09", "ciphertext": "VDdxQVo3TFFCbXIzcGpYa1lJbFFZQT09"}'
 
 def encode_message(message, K1,K2):
     # iv + E_k1(len(m)) + HMAC_k2(iv + E_k1(len(m))) + E_k1(m) + HMAC_k2(E_k1(m))
